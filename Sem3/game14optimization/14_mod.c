@@ -5,13 +5,13 @@
 #include <string.h>
 #include <time.h>
 
-#define N          4
-#define CELLS      16
-#define MAX_DEPTH  255
-#define Table_BITS    22
-#define Table_SIZE    (1u << Table_BITS)
-#define INF        1000000
-#define FOUND      (-1)
+#define N 4
+#define CELLS 16
+#define MAX_DEPTH 255
+#define Table_BITS 22
+#define Table_SIZE (1u << Table_BITS)
+#define INF 1000000
+#define FOUND (-1)
 
 
 int dist[15][CELLS]; // dist[фишка][клетка] - манхэттенское расстояние до цели
