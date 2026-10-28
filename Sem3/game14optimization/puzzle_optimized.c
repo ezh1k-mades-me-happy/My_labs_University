@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,16 +5,17 @@
 #include <ctype.h>
 #include <limits.h>
 #include <stdint.h>
+#include <time.h>
 
 #define N 4 // Размер поля
 #ifndef MAX_MOVES
 #define MAX_MOVES 100
 #endif
-#ifndef TT_BITS
-#define TT_BITS 16 // 1 МиБ при размере записи 16 байт.
+#ifndef Table_BITS
+#define Table_BITS 16 // 1 МиБ при размере записи 16 байт.
 #endif
-#if TT_BITS < 0 || TT_BITS > 24
-#error TT_BITS must be between 0 and 24
+#if Table_BITS < 0 || Table_BITS > 24
+#error Table_BITS must be between 0 and 24
 #endif
 #if MAX_MOVES < 1 || MAX_MOVES > 255
 #error MAX_MOVES must be between 1 and 255
@@ -42,45 +42,47 @@ typedef struct {
     int h;
 } Move;
 
-static unsigned char dist[15][N * N];
-static uint16_t row_value[15][N * N], col_value[15][N * N];
-static unsigned char line_penalty[625]; // 5^4 вариантов строки: 0 — посторонняя фишка.
-static int tables_ready;
-static unsigned char neighbors[N * N][4];
-static unsigned char neighbor_count[N * N];
-static uint64_t path_keys[MAX_MOVES + 1];
-static uint64_t goal_key;
-static uint8_t solution_moves[MAX_MOVES]; // from и to занимают по четыре бита.
-static int solution_depth = -1;
+unsigned char dist[15][N * N];
+uint16_t row_value[15][N * N], col_value[15][N * N];
+unsigned char line_penalty[625]; // 5^4 вариантов строки: 0 — посторонняя фишка.
+int tables_ready;
+unsigned char neighbors[N * N][4];
+unsigned char neighbor_count[N * N];
+uint64_t path_keys[MAX_MOVES + 1];
+uint64_t goal_key;
+uint8_t solution_moves[MAX_MOVES]; // from и to занимают по четыре бита.
+int solution_depth = -1;
 
 // Ограниченный кэш: совпадение индекса не означает совпадение досок.
-#define TT_SIZE (1u << TT_BITS)
+#define Table_SIZE (1u << Table_BITS)
+
 typedef struct {
     uint64_t key;
     uint32_t generation;
     int depth;
 } Transposition;
-static Transposition transpositions[TT_SIZE];
-static uint32_t generation;
+
+Transposition transpositions[Table_SIZE];
+uint32_t generation;
 
 // Метка прохода логически очищает кэш без обнуления всего массива.
-static void next_iteration(void) {
+void next_iteration(void) {
     if (++generation == 0) {
         memset(transpositions, 0, sizeof(transpositions));
         generation = 1;
     }
 }
 
-static size_t table_index(uint64_t key) {
+size_t table_index(uint64_t key) {
     key ^= key >> 30;
     key *= UINT64_C(0xbf58476d1ce4e5b9);
     key ^= key >> 27;
     key *= UINT64_C(0x94d049bb133111eb);
     key ^= key >> 31;
-    return (size_t)key & (TT_SIZE - 1);
+    return (size_t)key & (Table_SIZE - 1);
 }
 
-static int seen_at_better_depth(uint64_t key, int depth) {
+int seen_at_better_depth(uint64_t key, int depth) {
     Transposition *entry = &transpositions[table_index(key)];
     if (entry->generation == generation && entry->key == key && entry->depth <= depth) return 1;
     entry->generation = generation;
@@ -89,7 +91,7 @@ static int seen_at_better_depth(uint64_t key, int depth) {
     return 0;
 }
 
-static int read_token(char *token, size_t capacity) {
+int read_token(char *token, size_t capacity) {
     int c;
     size_t used = 0;
     int invalid_token = 0;
@@ -154,7 +156,7 @@ int is_correct_input(int board[N][N]) {
 
 // Линейный конфликт: 2 * (число фишек в своей линии - длина LIS).
 // Таблица строится один раз; при поиске LIS больше не вычисляется.
-static void init_conflicts(void) {
+void init_conflicts(void) {
     for (int code = 0; code < 625; ++code) {
         int digits[4], lengths[4] = {0}, count = 0, best = 0;
         int remaining = code;
@@ -220,7 +222,7 @@ State create_state(int initial_board[N][N]) {
 
 // Ход вдоль линии не меняет порядок её фишек. Конфликт может измениться
 // только при выходе из своей строки/колонки или при возвращении в неё.
-static int conflict_delta(const State *state, int tile, int from, int to) {
+int conflict_delta(const State *state, int tile, int from, int to) {
     if (from / N != to / N) {
         int a = from / N, b = to / N;
         return line_penalty[state->rows[a] - row_value[tile][from]]
@@ -247,8 +249,7 @@ void sort_moves(Move moves[8], int count) {
     }
 }
 
-int calculate_possible_moves(const State *state, Move moves[8], int depth,
-                             int bound, int last_from, int last_to, int *next_bound) {
+int calculate_possible_moves(const State *state, Move moves[8], int depth, int bound, int last_from, int last_to, int *next_bound) {
     int count = 0;
     for (int z = 1; z >= 0; --z) {
         int to = state->zero[z];
@@ -256,8 +257,7 @@ int calculate_possible_moves(const State *state, Move moves[8], int depth,
             int from = neighbors[to][d];
             int tile = state->board[from];
             if (tile == 0 || (from == last_to && to == last_from)) continue;
-            int next_h = state->h - dist[tile][from] + dist[tile][to]
-                       + conflict_delta(state, tile, from, to);
+            int next_h = state->h - dist[tile][from] + dist[tile][to] + conflict_delta(state, tile, from, to);
             int estimate = depth + 1 + next_h;
             if (estimate > bound) {
                 if (estimate < *next_bound) *next_bound = estimate;
@@ -307,9 +307,12 @@ int is_on_path(const State *state, int last_step) {
 int search_iteration(State *state, int depth, int bound, int last_from, int last_to) {
     int estimate = depth + state->h;
     if (estimate > bound) return estimate;
-    if (is_goal(state)) { solution_depth = depth; return 0; }
+    if (is_goal(state)){
+        solution_depth = depth;
+        return 0;
+    }
     if (depth >= MAX_MOVES) return INT_MAX;
-    // Чётность g+h постоянна: Manhattan меняется на 1, конфликты — на чётное число.
+    // Чётность g+h постоянна: Manhattean меняется на 1, конфликты — на чётное число.
     // Следующий возможный порог — bound+2; повтор не должен перескочить его.
     if (seen_at_better_depth(state->key, depth)) return bound + 2;
 
@@ -373,7 +376,11 @@ int main(void) {
         if (feof(stdin) || ferror(stdin)) return 2;
     }
     puts("Working...");
+
+    clock_t start = clock();
     int length = find_solution(initial_board);
+    clock_t end = clock();
+    double elapsed = (double)(end - start) / CLOCKS_PER_SEC;
     if (length == -2) {
         puts("Incorrect input: use 1..14 once and 0 twice.");
         return 2;
@@ -382,7 +389,9 @@ int main(void) {
         printf("No solution found within %d moves.\n", MAX_MOVES);
         return 1;
     }
+
     printf("Solution length: %d\n", length);
     print_solution(initial_board, length);
+    printf("Moves: %d, search time: %.3f s\n", length, elapsed);
     return 0;
 }
