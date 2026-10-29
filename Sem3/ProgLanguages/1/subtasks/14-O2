@@ -1,0 +1,133 @@
+	.file	"block14_loop_unrolling.c"
+	.text
+	.section	.rodata.str1.1,"aMS",@progbits,1
+.LC0:
+	.string	"%d"
+	.section	.text.startup,"ax",@progbits
+	.p2align 4
+	.globl	main
+	.type	main, @function
+main:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	subq	$168, %rsp
+	.cfi_def_cfa_offset 176
+	leaq	.LC0(%rip), %rdi
+	movq	%fs:40, %rax
+	movq	%rax, 152(%rsp)
+	xorl	%eax, %eax
+	leaq	12(%rsp), %rsi
+	call	scanf@PLT
+	movd	12(%rsp), %xmm6
+	leaq	16(%rsp), %rax
+	movdqa	.LC2(%rip), %xmm5
+	movdqa	.LC3(%rip), %xmm4
+	leaq	144(%rsp), %rdx
+	pshufd	$0, %xmm6, %xmm1
+	paddd	.LC1(%rip), %xmm1
+	.p2align 4,,10
+	.p2align 3
+.L2:
+	movdqa	%xmm1, %xmm0
+	addq	$16, %rax
+	paddd	%xmm5, %xmm1
+	movdqa	%xmm0, %xmm3
+	movdqa	%xmm0, %xmm2
+	paddd	%xmm4, %xmm3
+	punpcklwd	%xmm3, %xmm0
+	punpckhwd	%xmm3, %xmm2
+	movdqa	%xmm0, %xmm3
+	punpcklwd	%xmm2, %xmm0
+	punpckhwd	%xmm2, %xmm3
+	punpcklwd	%xmm3, %xmm0
+	movaps	%xmm0, -16(%rax)
+	cmpq	%rax, %rdx
+	jne	.L2
+	movswl	16(%rsp), %eax
+	movq	152(%rsp), %rdx
+	subq	%fs:40, %rdx
+	jne	.L7
+	addq	$168, %rsp
+	.cfi_remember_state
+	.cfi_def_cfa_offset 8
+	ret
+.L7:
+	.cfi_restore_state
+	call	__stack_chk_fail@PLT
+	.cfi_endproc
+.LFE0:
+	.size	main, .-main
+	.text
+	.p2align 4
+	.globl	loop_unrolling
+	.type	loop_unrolling, @function
+loop_unrolling:
+.LFB1:
+	.cfi_startproc
+	endbr64
+	movd	%edi, %xmm6
+	movdqa	.LC2(%rip), %xmm5
+	movdqa	.LC3(%rip), %xmm4
+	leaq	128(%rsi), %rax
+	pshufd	$0, %xmm6, %xmm1
+	paddd	.LC1(%rip), %xmm1
+	.p2align 4,,10
+	.p2align 3
+.L9:
+	movdqa	%xmm1, %xmm0
+	addq	$16, %rsi
+	paddd	%xmm5, %xmm1
+	movdqa	%xmm0, %xmm3
+	movdqa	%xmm0, %xmm2
+	paddd	%xmm4, %xmm3
+	punpcklwd	%xmm3, %xmm0
+	punpckhwd	%xmm3, %xmm2
+	movdqa	%xmm0, %xmm3
+	punpcklwd	%xmm2, %xmm0
+	punpckhwd	%xmm2, %xmm3
+	punpcklwd	%xmm3, %xmm0
+	movups	%xmm0, -16(%rsi)
+	cmpq	%rsi, %rax
+	jne	.L9
+	ret
+	.cfi_endproc
+.LFE1:
+	.size	loop_unrolling, .-loop_unrolling
+	.section	.rodata.cst16,"aM",@progbits,16
+	.align 16
+.LC1:
+	.long	0
+	.long	-1
+	.long	-2
+	.long	-3
+	.align 16
+.LC2:
+	.long	-8
+	.long	-8
+	.long	-8
+	.long	-8
+	.align 16
+.LC3:
+	.long	-4
+	.long	-4
+	.long	-4
+	.long	-4
+	.ident	"GCC: (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:

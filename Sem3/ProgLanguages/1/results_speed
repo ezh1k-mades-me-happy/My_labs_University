@@ -1,0 +1,41 @@
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# gcc -Ofast test2.c
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# ./a.out 100000
+n=100000 repeat=15 median_ms=548.104 min_ms=534.540 max_ms=719.686  
+
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# gcc -O3 test2.c
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# ./a.out 100000
+n=100000 repeat=15 median_ms=546.350 min_ms=533.777 max_ms=570.691  
+
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# gcc -Os test2.c
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# ./a.out 100000
+n=100000 repeat=15 median_ms=547.528 min_ms=535.349 max_ms=573.131  
+
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# gcc -O2 -march=native test2.c
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# ./a.out 100000
+n=100000 repeat=15 median_ms=545.319 min_ms=535.243 max_ms=587.396  
+
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# gcc -O2 -funroll-loops test2.c
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# ./a.out 100000
+n=100000 repeat=15 median_ms=370.809 min_ms=360.426 max_ms=380.995  
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# ./a.out 100000
+n=100000 repeat=15 median_ms=374.344 min_ms=364.124 max_ms=379.970  
+
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# gcc -O2 -march=native -funroll-loops -flto test2.c
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# ./a.out 100000
+n=100000 repeat=15 median_ms=423.767 min_ms=409.158 max_ms=431.797  
+
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# gcc -O2 -march=native -funroll-loops -ftree-vectorize -flto test2.c
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# ./a.out 100000
+n=100000 repeat=15 median_ms=376.778 min_ms=367.589 max_ms=394.809  
+
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# gcc -O2 -march=native -ftree-vectorize -flto test2.c
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# ./a.out 100000
+n=100000 repeat=15 median_ms=555.278 min_ms=538.502 max_ms=617.612  
+
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# gcc -O2 -march=native -ftree-vectorize test2.c
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# ./a.out 100000
+n=100000 repeat=15 median_ms=593.696 min_ms=529.779 max_ms=677.910  
+
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# gcc -O3 -march=native -mtune=native -flto -fprofile-use -ffast-math -fno-semantic-interposition test2.c
+root@VictorLap:/mnt/c/Users/vikto/Nextcloud/Polytech/ЯП1# ./a.out 100000
+n=100000 repeat=15 median_ms=855.139 min_ms=837.700 max_ms=888.062  

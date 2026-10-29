@@ -1,0 +1,15 @@
+block01_const_copy_prop.c
+block02_const_folding_identities.c
+block03_redundant_assignment.c
+block04_strength_reduction.c
+block05_simple_loop.c
+block06_induction_variable.c
+block07_deep_subexpressions.c
+block08_constant_address.c
+block09_common_subexpr.c
+block10_loop_invariant.c
+block11_dead_code.c
+block12_unnecessary_loop.c
+block13_loop_jamming.c
+block14_loop_unrolling.c
+block15_jump_compression.c
